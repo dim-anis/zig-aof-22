@@ -1,29 +1,39 @@
 const std = @import("std");
-const ArrayList = std.ArrayList;
 
 pub fn main() anyerror!void {
-    const file = try std.fs.cwd().openFile("data2.txt", .{});
+    const file = try std.fs.cwd().openFile("input.txt", .{});
     defer file.close();
 
     var buf_reader = std.io.bufferedReader(file.reader());
     var in_stream = buf_reader.reader();
 
     var buf: [1024]u8 = undefined;
-    var max: i32 = 0;
+    var max = [3]i32{ 0, 0, 0 };
     var sum: i32 = 0;
     while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
         var num = std.fmt.parseInt(i32, line, 10) catch -1;
 
         if (num == -1) {
-            if (sum > max) {
-                max = sum;
-            }
-
+            updateMax(&max, sum);
             sum = 0;
         } else {
             sum += num;
         }
     }
 
-    std.debug.print("Max weight: {d}\n", .{max});
+    std.debug.print("Max weight: {d}\n", .{max[0]});
+    std.debug.print("Max weight: {d}\n", .{max[0] + max[1] + max[2]});
+}
+
+fn updateMax(max: *[3]i32, sum: i32) void {
+    if (sum > max[0]) {
+        max[2] = max[1];
+        max[1] = max[0];
+        max[0] = sum;
+    } else if (sum > max[1]) {
+        max[2] = max[1];
+        max[1] = sum;
+    } else if (sum > max[2]) {
+        max[2] = sum;
+    }
 }
